@@ -4,8 +4,8 @@ use Dotenv\Dotenv;
 
 
 /**
- * Récupère et traite les données provenant de l'URL
- * @author cdugu
+ * Singleton car la récupération des données ne peut se faire qu'une fois
+ * Permet de gérer le contenu de l'URL qui sollicite l'API
  */
 class Url {
     
@@ -46,7 +46,7 @@ class Url {
         $this->dotenv->load();
         // variables envoyées par l'url
         $this->data = $this->recupAllData();
-    }  
+    }
 
     /**
      * méthode statique de création de l'instance unique
@@ -58,16 +58,16 @@ class Url {
         }
         return self::$instance;
     }
-    
+
     /**
      * récupère la méthode HTTP utilisée pour le transfert
      * @return string
      */
-    public function recupMethodeHTTP() : string {
+    public function recupMethodeHTTP() : string{
         return filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-    } 
-    
-     /**
+    }  
+  
+    /**
      * retour d'une variable avec les caractères spéciaux convertis
      * et au format array si format "json" reçu
      * possibilité d'ajouter d'autres 'case' de conversions
@@ -78,44 +78,44 @@ class Url {
     public function recupVariable(string $nom, string $format="string") : string|array|null{
         $variable = $this->data[$nom] ?? '';
         switch ($format){
-            case "json" :
+            case "json" : 
                 $variable = $variable ? json_decode($variable, true) : null;
                 break;
         }
         return $variable;
-    }
-    
-     /**
-     * vérifie l'authenticité suivant la demande
-     * possibilité d'ajouter des 'case' et de nouvelles fonctions
+    }    
+ 
+    /**
+     * vérifie l'authentification suivant la demande
+     * possibilité d'ajouter des 'case' et de nouvelles fonctions 
      * si besoin d'un autre type d'authentification
      * @return bool
      */
-    public function authentification() : bool{
+    public function authentification(): bool{
         $authentification = htmlspecialchars($_ENV['AUTHENTIFICATION'] ?? '');
         switch ($authentification){
-            case '' : return true;
-            case 'basic' : return self::basicAuthentification();
+            case '' : return true ;
+            case 'basic' : return self::basicAuthentification() ;
             default : return true;
         }
     }
-    
+
     /**
-     * compare le user/pwd reçu en 'basic auth'
+     * compare le user/pwd reçu en 'basic auth' 
      * avec le user/pwd dans les variables d'environnement
-     * @return bool true si réussie
+     * @return bool true si authentification réussie
      */
     private function basicAuthentification() : bool{
         // récupère les variables d'environnement de l'authentification
         $expectedUser = htmlspecialchars($_ENV['AUTH_USER'] ?? '');
-        $expectedPw = htmlspecialchars($_ENV['AUTH_PW'] ?? '');
+        $expectedPw = htmlspecialchars($_ENV['AUTH_PW'] ?? '');  
         // récupère les variables envoyées en 'basic auth'
         $authUser = htmlspecialchars($_SERVER['PHP_AUTH_USER'] ?? '');
-        $authPw = htmlspecialchars($_SERVER['PHP_AUTH_PW'] ?? '');
-        // Contrôle si les valirs d'authentfication sont identiques
-        return ($authUser === $expectedUser && $authPw === $expectedPw);
-    }
-    
+        $authPw = htmlspecialchars($_SERVER['PHP_AUTH_PW'] ?? '');    
+        // Contrôle si les valeurs d'authentification sont identiques
+        return ($authUser === $expectedUser && $authPw === $expectedPw) ;
+    }    
+ 
     /**
      * récupération de toutes les variables envoyées par l'URL
      * nettoyage et retour dans un tableau associatif
@@ -132,13 +132,11 @@ class Url {
         $input = file_get_contents('php://input');
         parse_str($input, $postData);
         $data = array_merge($data, $postData);    
-        // htmlspecialchars appliqué à chaque valeur du tableau
+        // htmlspeciachars appliqué à chaque valeur du tableau
         $data = array_map(function($value) {
             return htmlspecialchars($value, ENT_NOQUOTES);
         }, $data);
         return $data;
     }
-    
-   
-    
+
 }

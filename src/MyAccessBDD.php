@@ -9,72 +9,71 @@ include_once("AccessBDD.php");
  *   existantes qui ne commencent pas par 'traitement')
  * - ajouter un 'case' dans un des switch des fonctions redéfinies 
  * - appeler la nouvelle fonction dans ce 'case'
- * @author cdugu
  */
 class MyAccessBDD extends AccessBDD {
-    
+	    
     /**
-     * Constructeur qui appelle celui de la classe mère
+     * constructeur qui appelle celui de la classe mère
      */
-    public function __construct() {
+    public function __construct(){
         try{
             parent::__construct();
-        } catch (Exception $e) {
+        }catch(\Exception $e){
             throw $e;
         }
     }
-    
-     /**
+
+    /**
      * demande de recherche
      * @param string $table
      * @param array|null $champs nom et valeur de chaque champ
      * @return array|null tuples du résultat de la requête ou null si erreur
      * @override
-     */
-    protected function traitementSelect(string $table, ?array $champs): ?array {
-        switch ($table){
+     */	
+    protected function traitementSelect(string $table, ?array $champs) : ?array{
+        switch($table){     
             case "" :
-                //return $this->uneFonction(parametres);
-            default :
+                // return $this->uneFonction(parametres);
+            default:
                 // cas général
                 return $this->selectTuplesOneTable($table, $champs);
-        }
+        }	
     }
-    
-     /**
+
+    /**
      * demande d'ajout (insert)
      * @param string $table
      * @param array|null $champs nom et valeur de chaque champ
      * @return int|null nombre de tuples ajoutés ou null si erreur
      * @override
-     */
-    protected function traitementInsert(string $table, ?array $champs): ?int {
+     */	
+    protected function traitementInsert(string $table, ?array $champs) : ?int{
         switch($table){
             case "" :
                 // return $this->uneFonction(parametres);
-            default :
+            default:                    
                 // cas général
-                return $this->insertOneTupleOneTable($table, $champs);
+                return $this->insertOneTupleOneTable($table, $champs);	
         }
     }
     
-     /**
-     * demande modification (update)
+    /**
+     * demande de modification (update)
      * @param string $table
      * @param string|null $id
      * @param array|null $champs nom et valeur de chaque champ
      * @return int|null nombre de tuples modifiés ou null si erreur
      * @override
-     */
-    protected function traitementUpdate(string $table, ?string $id, ?array $champs): ?int {
+     */	
+    protected function traitementUpdate(string $table, ?string $id, ?array $champs) : ?int{
         switch($table){
             case "" :
                 // return $this->uneFonction(parametres);
-            default :
-                // caas général
+            default:                    
+                // cas général
                 return $this->updateOneTupleOneTable($table, $id, $champs);
-        }
-    }
+        }	
+    }  
     
     /**
      * demande de suppression (delete)
@@ -82,47 +81,47 @@ class MyAccessBDD extends AccessBDD {
      * @param array|null $champs nom et valeur de chaque champ
      * @return int|null nombre de tuples supprimés ou null si erreur
      * @override
-     */
-    protected function traitementDelete(string $table, ?array $champs): ?int {
+     */	
+    protected function traitementDelete(string $table, ?array $champs) : ?int{
         switch($table){
             case "" :
                 // return $this->uneFonction(parametres);
-            default :
+            default:                    
                 // cas général
-                return $this->deleteTuplesOneTable($table, $champs);
+                return $this->deleteTuplesOneTable($table, $champs);	
         }
-    }
-   
+    }	    
+        
     /**
      * récupère les tuples d'une seule table
      * @param string $table
      * @param array|null $champs
-     * @return array|null
+     * @return array|null 
      */
     private function selectTuplesOneTable(string $table, ?array $champs) : ?array{
         if(empty($champs)){
             // tous les tuples d'une table
             $requete = "select * from $table;";
-            return $this->conn->queryBDD($requete);
+            return $this->conn->queryBDD($requete);  
         }else{
             // tuples spécifiques d'une table
             $requete = "select * from $table where ";
             foreach ($champs as $key => $value){
                 $requete .= "$key=:$key and ";
             }
-            // enlève le dernier and
-            $requete = substr($requete, 0, strlen($requete)-5);
+            // (enlève le dernier and)
+            $requete = substr($requete, 0, strlen($requete)-5);	 
             return $this->conn->queryBDD($requete, $champs);
         }
-    }
-    
+    }	
+
     /**
      * demande d'ajout (insert) d'un tuple dans une table
-     * @param strin $table
+     * @param string $table
      * @param array|null $champs
      * @return int|null nombre de tuples ajoutés (0 ou 1) ou null si erreur
-     */
-    private function insertOneTupleOneTable(strin $table, ?array $champs) : ?int{
+     */	
+    private function insertOneTupleOneTable(string $table, ?array $champs) : ?int{
         if(empty($champs)){
             return null;
         }
@@ -131,18 +130,18 @@ class MyAccessBDD extends AccessBDD {
         foreach ($champs as $key => $value){
             $requete .= "$key,";
         }
-        // enlève la dernière virgule
-        $requete = substr($requete,0, strlen($requete)-1);
+        // (enlève la dernière virgule)
+        $requete = substr($requete, 0, strlen($requete)-1);
         $requete .= ") values (";
         foreach ($champs as $key => $value){
             $requete .= ":$key,";
         }
-        // enlève la dernière virgule
-        $requete = substr($requete,0, strlen($requete)-1);
+        // (enlève la dernière virgule)
+        $requete = substr($requete, 0, strlen($requete)-1);
         $requete .= ");";
-        return $this->conn->queryBDD($requete, $champs);
+        return $this->conn->updateBDD($requete, $champs);
     }
-    
+
     /**
      * demande de modification (update) d'un tuple dans une table
      * @param string $table
@@ -150,7 +149,7 @@ class MyAccessBDD extends AccessBDD {
      * @param array|null $champs 
      * @return int|null nombre de tuples modifiés (0 ou 1) ou null si erreur
      */	
-    private function updateOneTupleOneTable(string $table, ?string $id, ?array $champs) : ?int{
+    private function updateOneTupleOneTable(string $table, ?string $id, ?array $champs) : ?int {
         if(empty($champs)){
             return null;
         }
@@ -162,11 +161,11 @@ class MyAccessBDD extends AccessBDD {
         foreach ($champs as $key => $value){
             $requete .= "$key=:$key,";
         }
-        // enlève la dernière virgule
-        $requete = substr($requete,0, strlen($requete)-1);
+        // (enlève la dernière virgule)
+        $requete = substr($requete, 0, strlen($requete)-1);				
         $champs["id"] = $id;
-        $requete .= " where id=:id;";
-        return $this->conn->updateBDD($requete, $champs);
+        $requete .= " where id=:id;";		
+        return $this->conn->updateBDD($requete, $champs);	        
     }
     
     /**
@@ -188,5 +187,5 @@ class MyAccessBDD extends AccessBDD {
         $requete = substr($requete, 0, strlen($requete)-5);   
         return $this->conn->updateBDD($requete, $champs);	        
     }
-    
+ 
 }
